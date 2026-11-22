@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Vortex</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Ccircle cx='8' cy='8' r='6' fill='%23F2A65A'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<main class="app">
+
+  <section class="stage" aria-label="Board">
+    <div class="board-wrap">
+      <canvas id="board" tabindex="0" role="application" aria-label="Vortex board"></canvas>
+    </div>
+    <div class="hud" id="hud" aria-hidden="true">
+      <span class="chip" id="hudChip"></span>
+      <span class="hud-status" id="hudStatus"></span>
+      <div class="eval-track eval-track--slim"><div class="eval-fill" id="hudEvalFill"></div><span class="eval-mid"></span></div>
+      <span class="num" id="hudEvalLabel"></span>
+    </div>
+  </section>
+
+  <aside class="panel" id="panel">
+    <header class="brand">
+      <div>
+        <h1>VORTEX</h1>
+        <p class="tagline">Take the core. Hold it.</p>
+      </div>
+      <button type="button" class="btn btn--quiet" id="btnHelp">How to play</button>
+    </header>
+
+    <div class="view" id="viewGame">
+      <section class="block status-block">
+        <p class="status" id="status" aria-live="polite"><span class="chip" id="statusChip"></span><span id="statusMain"></span></p>
+        <p class="substatus" id="statusSub"></p>
+      </section>
+
+      <section class="block" aria-label="Evaluation">
+        <div class="eval-head">
+          <span class="label">Ember</span>
+          <span class="num" id="evalLabel">even</span>
+          <span class="label">Frost</span>
+        </div>
+        <div class="eval-track"><div class="eval-fill" id="evalFill"></div><span class="eval-mid"></span></div>
+      </section>
+
+      <section class="block" aria-label="Score">
+        <table class="score">
+          <thead><tr><th scope="col"><span class="sr">Player</span></th><th scope="col" class="label">Core</th><th scope="col" class="label">Stones</th></tr></thead>
+          <tbody>
+            <tr><th scope="row"><span class="chip chip--ember"></span>Ember <span class="you">you</span></th><td><span class="pips" id="coreEmber"></span></td><td class="num" id="stonesEmber">4</td></tr>
+            <tr><th scope="row"><span class="chip chip--frost"></span>Frost</th><td><span class="pips" id="coreFrost"></span></td><td class="num" id="stonesFrost">4</td></tr>
+          </tbody>
+        </table>
+      </section>
+
+      <section class="block actions" aria-label="Actions">
+        <button type="button" class="btn" id="btnHint">Hint</button>
+        <button type="button" class="btn btn--why" id="btnWhy" disabled title="Frost hasn't moved yet">Why this move?</button>
+        <button type="button" class="btn" id="btnUndo" disabled>Undo</button>
+        <button type="button" class="btn" id="btnRestart">Restart</button>
+      </section>
+
+      <section class="block" aria-label="Difficulty">
+        <h2 class="label">Difficulty</h2>
+        <div class="segmented" role="radiogroup" aria-label="Difficulty">
+          <label><input type="radio" name="depth" value="2"><span>Easy <i class="num">2</i></span></label>
+          <label><input type="radio" name="depth" value="4" checked><span>Medium <i class="num">4</i></span></label>
+          <label><input type="radio" name="depth" value="6"><span>Hard <i class="num">6</i></span></label>
+        </div>
+      </section>
+
+      <section class="block history-block" aria-label="Move history">
+        <h2 class="label">Moves</h2>
+        <ol class="history" id="history"></ol>
+      </section>
+    </div>
+
+    <div class="view" id="viewWhy" hidden>
+      <section class="block">
+        <h2 class="label">Why this move?</h2>
+        <p class="why-move"><span class="chip chip--frost"></span><span id="whyMove"></span><span class="num why-score" id="whyScore"></span></p>
+        <p class="why-sentence" id="whySentence"></p>
+      </section>
+      <section class="block">
+        <h2 class="label" id="whyConsidered">Considered</h2>
+        <ol class="alts" id="whyAlts"></ol>
+      </section>
+      <section class="block">
+        <h2 class="label">Expected line</h2>
+        <ol class="line" id="whyLine"></ol>
+        <div class="stepper">
+          <button type="button" class="btn" id="btnPrev">Previous</button>
+          <span class="num" id="whyStep"></span>
+          <button type="button" class="btn" id="btnNext">Next</button>
+        </div>
+      </section>
+      <section class="block">
+        <button type="button" class="btn btn--wide" id="btnBack">Back to the game</button>
+      </section>
+    </div>
+
+    <p class="engine num" id="engineLine"></p>
+  </aside>
+</main>
+
+<div class="overlay" id="walkthrough" role="dialog" aria-modal="true" aria-labelledby="walkTitle" hidden>
+  <div class="walk">
+    <header class="walk-head">
+      <h1 id="walkTitle">VORTEX</h1>
+      <p class="tagline">A board game that teaches itself, then plays you.</p>
+    </header>
+    <ol class="cards">
+      <li class="card"><canvas class="card-canvas" data-card="0" aria-hidden="true"></canvas>
+        <h2 class="label">1 &middot; The board</h2>
+        <p>Three rings, eight spokes. You are Ember, the solid amber stones. Frost, the ringed blue stones, is the computer.</p></li>
+      <li class="card"><canvas class="card-canvas" data-card="1" aria-hidden="true"></canvas>
+        <h2 class="label">2 &middot; Step</h2>
+        <p>Each turn, step one stone to a neighbouring node: along its ring, or one spoke in or out.</p></li>
+      <li class="card"><canvas class="card-canvas" data-card="2" aria-hidden="true"></canvas>
+        <h2 class="label">3 &middot; Push</h2>
+        <p>Step onto a Frost stone and it is shoved outward. On the rim, or with the node behind it taken, it is captured.</p></li>
+      <li class="card"><canvas class="card-canvas" data-card="3" aria-hidden="true"></canvas>
+        <h2 class="label">4 &middot; Win</h2>
+        <p>Claim the core: get three stones onto the inner ring. Keep them there through Frost&rsquo;s reply and you win.</p></li>
+    </ol>
+    <footer class="walk-foot">
+      <button type="button" class="btn btn--primary" id="btnStart">Play</button>
+      <p class="keys">Keys: arrows and Enter on the board &middot; H hint &middot; W why &middot; U undo &middot; R restart &middot; P present</p>
+    </footer>
+  </div>
+</div>
+
+<script src="engine.js"></script>
+<script src="render.js"></script>
+<script src="ui.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
